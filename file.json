@@ -1,13 +1,31 @@
 {
-  "posts": [
+  "customers": [
     {
-      "title": "This is a test"
+      "id": 32,
+      "content": {
+        "firstName": "Adam",
+        "lastName": "Faulkner",
+        "employeeId": 32,
+        "address": "23 Albert Street"
+      }
     },
     {
-      "title": "This is a test"
+      "id": 32,
+      "content": {
+        "firstName": "Adam",
+        "lastName": "Faulkner",
+        "employeeId": 32,
+        "address": "23 Albert Street"
+      }
     },
     {
-      "title": "This is a test"
+      "id": 32,
+      "content": {
+        "firstName": "Adam",
+        "lastName": "Faulkner",
+        "employeeId": 32,
+        "address": "23 Albert Street"
+      }
     }
   ]
 }

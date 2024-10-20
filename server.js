@@ -1,95 +1,109 @@
 // Import Fastify
 import Fastify from 'fastify';
-import { LowSync } from 'lowdb';
-import { JSONFileSync } from 'lowdb/node'
+import { JSONFilePreset } from 'lowdb/node'
 import fs from 'fs';
 import path from 'path';
-import { type } from 'os';
 
-const fastify = Fastify({ logger: true })
+const DATABASE_FILE = 'file.json';
+const fastifyServer = Fastify({ logger: true })
+const database = await JSONFilePreset(DATABASE_FILE, {})
 
-const title = "This is a test"
-const adapter = new JSONFileSync('file.json')
-const db = new LowSync(adapter, {})
+database.read()
 
-db.read()	//Load the content of the file into memory
 
-// Check if the file exists and if db.data is undefined
-if (!fs.existsSync(path.resolve('file.json')) || db.data === null) {
-	// Initialize with default structure if the file does not exist or is empty
-	db.data = { posts: [] };
-	db.write(); // Write the initialized data to the file
+if (!fs.existsSync(path.resolve(DATABASE_FILE)) || database.data === null) {
+	database.data = { customers: [] };
+	await database.write();
 }
-db.data.posts.push({ title });  //add data into the "collection"
-
-db.write() //persist the data by saving it to the JSON file
-
-//any Find-like operation is left to the skill of the user
-
-let record = db.data.posts.find(p => p.title == "Hello world")
-
-if (!record) {
-	console.log("No data found!")
-} else {
-	console.log("== Record found ==")
-	console.log(record)
-}
-
-// GET: Retrieve a single book by ID
-fastify.get('/books/:id', async (request, reply) => {
-	// TODO make all the constant Strings CONSTS
-	const customer = db.data.get("customers").find({ "employeeId": request.params.id })
-
-	// TODO if customer not found, 400 instead of 404 because that's what the client wants
-
-	if (!customer) {
-		return reply.status(400).send({ message: 'L BOZO' })
-	}
-	return customer
-})
-
 
 const customerSchema = {
 	schema: {
 		body: {
 			type: 'object',
+			required: ['firstName', 'lastName', 'address', 'employeeId'],
 			properties: {
 				firstName: { type: 'string' },
 				lastName: { type: 'string' },
 				address: { type: 'string' },
-				employeeId: { type: 'number' },
+				employeeId: { type: 'number' }
 			}
 		}
 	}
 }
 
-// PUT: Update a book by ID
-fastify.put('/customers', customerSchema, async (request, reply) => {
-	const id = Number(request.body.employeeId)
-	const index = books.findIndex(b => b.id === id)
-
-	if (index === -1) {
-		return reply.status(404).send({ message: 'Book not found' })
+fastifyServer.get('/customers/:id', async (request, reply) => {
+	const customer = await database.data
+		.customers
+		.find((entity) => entity.id == request.params.id)
+	if (!customer) {
+		throw new Error("No customer with that id")
 	}
-
-	books[index] = {
-		id,
-		title: request.body.title,
-		author: request.body.author
-	}
-
-	return books[index]
+	return customer.content
 })
 
-// Start the server
+fastifyServer.post('/customers', { customerSchema }, async (request, reply) => {
+
+	const customerBody = request.body
+
+	await database.data
+		.customers
+		.push({ id: customerBody.employeeId, content: customerBody })
+	await database.write()
+
+	return reply
+		.status(201)
+		.send({ message: 'Created successfully' })
+})
+
+fastifyServer.setErrorHandler((error, request, reply) => {
+
+	fastifyServer.log.debug(`error: ${error}`)
+	if (error.validation) {
+		const response = {
+			fault: {
+				code: 'badRequest',
+				httpStatus: 400,
+				message: 'You have supplied invalid request details',
+				serverDateTime: new Date().toISOString(),
+				failures: error.validation.map(err => {
+					return {
+						field: err.instancePath.replace('/', ''),
+						message: err.message
+					}
+				})
+			}
+		}
+		return reply
+			.status(400)
+			.send(response)
+	} else {
+		// All other errors
+		const response = {
+			fault: {
+				code: 'internalError',
+				httpStatus: 500,
+				message: 'An internal error was encountered processing the request',
+				serverDateTime: new Date().toISOString(),
+				failures: [
+					error.message
+				]
+			}
+		}
+		fastifyServer.log.info(error.message);
+
+		return reply
+			.status(500)
+			.send(response)
+	}
+})
+
 const start = async () => {
 	try {
-		await fastify.listen({ port: 3000 })
-		fastify.log.info(`Server is running at http://localhost:3000`)
+		await fastifyServer.listen({ port: 3000 })
+		fastifyServer.log.info(`Server is running at http://localhost:3000`)
 	} catch (err) {
-		fastify.log.error(err)
+		fastifyServer.log.error(err)
 		process.exit(1)
 	}
 }
-
 start()
