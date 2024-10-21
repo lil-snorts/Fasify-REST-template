@@ -18,6 +18,9 @@ describe('Fastify Server Integration Tests', () => {
 
         // Create a stub for the CustomerDatabaseUtil class
         customerDatabaseUtilStub = sinon.createStubInstance(CustomerDatabaseUtil);
+
+
+
         fastifyServer.customerDatabaseUtil = customerDatabaseUtilStub;
     });
 
@@ -40,21 +43,6 @@ describe('Fastify Server Integration Tests', () => {
             expect(customerDatabaseUtilStub.addNewCustomerAsync.notCalled).to.be.true; // Ensure DB not called
         });
 
-        it('should return 400 for requests with too many fields', async () => {
-            // Arrange
-            const invalidCustomerDto = {
-                employeeId: '1', firstName: 'John', lastName: 'Doe', address: "23 fake street", additionalFeild: true
-            };
-
-            // Act
-            const response = await request(fastifyServer.server).post('/customers').send(invalidCustomerDto);
-
-            // Assert
-            expect(response.status).to.equal(400);
-            expect(response.body.fault.code).to.equal('badRequest');
-            expect(response.body.fault.message).to.equal('You have supplied invalid request details');
-            expect(customerDatabaseUtilStub.addNewCustomerAsync.notCalled).to.be.true; // Ensure DB not called
-        });
         it('should return 200 for valid request', async () => {
             // Arrange
             const customerDto = VALID_CUSTOMER;

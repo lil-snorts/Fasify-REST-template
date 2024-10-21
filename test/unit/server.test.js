@@ -17,6 +17,7 @@ describe('Fastify Server', () => {
         // Create a stub for the CustomerDatabaseUtil class
         customerDatabaseUtilStub = sinon.createStubInstance(CustomerDatabaseUtil);
         fastifyServer.customerDatabaseUtil = customerDatabaseUtilStub;
+
     });
 
     after(async () => {

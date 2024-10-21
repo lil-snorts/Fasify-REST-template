@@ -8,15 +8,6 @@
         "lastName": "Doe",
         "address": "23 fake street"
       }
-    },
-    {
-      "id": 312,
-      "content": {
-        "firstName": "Adam",
-        "lastName": "Faulkner",
-        "employeeId": 312,
-        "address": "23 Albert Street"
-      }
     }
   ]
 }

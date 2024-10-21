@@ -60,25 +60,24 @@ function setServerErrorHandler() {
 			return reply
 				.status(400)
 				.send(response);
-		} else {
-			// All other errors
-			const response = {
-				fault: {
-					code: 'internalError',
-					httpStatus: 500,
-					message: 'An internal error was encountered processing the request',
-					serverDateTime: new Date().toISOString(),
-					failures: [
-						error.message
-					]
-				}
-			};
-			fastifyServer.log.info(error.message);
-
-			return reply
-				.status(500)
-				.send(response);
 		}
+		// All other errors
+		const response = {
+			fault: {
+				code: 'internalError',
+				httpStatus: 500,
+				message: 'An internal error was encountered processing the request',
+				serverDateTime: new Date().toISOString(),
+				failures: [
+					error.message
+				]
+			}
+		};
+		fastifyServer.log.info(error.message);
+
+		return reply
+			.status(500)
+			.send(response);
 	});
 }
 
