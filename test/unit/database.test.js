@@ -20,7 +20,7 @@ describe('Database Class', () => {
         // Replace the actual JSONFilePreset with the stub
         sinon.replace(Database.prototype, 'initialize', jsonFilePresetStub);
 
-        database = new Database();
+        database = new Database('testDatabase.json');
         await database.initialize();
     });
 

@@ -22,9 +22,7 @@ const startServer = async () => {
 	}
 }
 
-startServer()
-
-
+await startServer()
 
 function setServerErrorHandler() {
 	fastifyServer.setErrorHandler((error, request, reply) => {

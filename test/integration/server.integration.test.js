@@ -10,6 +10,8 @@ describe('Fastify Server Integration Tests', () => {
     let fastifyServer;
     let customerDatabaseUtilStub;
 
+    const VALID_CUSTOMER = { employeeId: 1, firstName: 'John', lastName: 'Doe', address: "23 fake street" }
+
     before(async () => {
         // Create a Fastify instance
         fastifyServer = build();
@@ -26,7 +28,7 @@ describe('Fastify Server Integration Tests', () => {
     describe('POST /customers', () => {
         it('should return 400 for bad requests (missing fields)', async () => {
             // Arrange
-            const invalidCustomerDto = { name: 'John Doe' }; // Missing employeeId
+            const invalidCustomerDto = { firstName: 'John Doe' }; // Missing employeeId
 
             // Act
             const response = await request(fastifyServer.server).post('/customers').send(invalidCustomerDto);
@@ -40,7 +42,9 @@ describe('Fastify Server Integration Tests', () => {
 
         it('should return 400 for requests with too many fields', async () => {
             // Arrange
-            const invalidCustomerDto = { employeeId: '1', name: 'John Doe', age: 30, extraField: 'extraValue' };
+            const invalidCustomerDto = {
+                employeeId: '1', firstName: 'John', lastName: 'Doe', address: "23 fake street", additionalFeild: true
+            };
 
             // Act
             const response = await request(fastifyServer.server).post('/customers').send(invalidCustomerDto);
@@ -51,10 +55,21 @@ describe('Fastify Server Integration Tests', () => {
             expect(response.body.fault.message).to.equal('You have supplied invalid request details');
             expect(customerDatabaseUtilStub.addNewCustomerAsync.notCalled).to.be.true; // Ensure DB not called
         });
-
-        it('should return 400 for duplicate requests', async () => {
+        it('should return 200 for valid request', async () => {
             // Arrange
-            const customerDto = { employeeId: '1', name: 'John Doe' };
+            const customerDto = VALID_CUSTOMER;
+            customerDatabaseUtilStub.addNewCustomerAsync.withArgs(VALID_CUSTOMER)
+                .returns(Promise.resolve());
+
+            // Act
+            const response = await request(fastifyServer.server).post('/customers').send(customerDto);
+
+            // Assert
+            expect(response.status).to.equal(201);
+        });
+        it('should return 500 for duplicate requests', async () => {
+            // Arrange
+            const customerDto = VALID_CUSTOMER;
             customerDatabaseUtilStub.addNewCustomerAsync.throws(new ServerError("Database not configured to allow duplicate ids"));
 
             // Act
@@ -68,7 +83,7 @@ describe('Fastify Server Integration Tests', () => {
 
         it('should return 500 for generic database errors', async () => {
             // Arrange
-            const customerDto = { employeeId: '2', name: 'Jane Doe' };
+            const customerDto = VALID_CUSTOMER;
             customerDatabaseUtilStub.addNewCustomerAsync.throws(new Error("Generic DB error"));
 
             // Act
@@ -97,7 +112,7 @@ describe('Fastify Server Integration Tests', () => {
 
         it('should return 400 for non-existing customer ID', async () => {
             // Arrange
-            const customerId = 'non-existing-id';
+            const customerId = -1;
             customerDatabaseUtilStub.getCustomerAsync.throws(new ClientError("No customer with that id"));
 
             // Act
@@ -107,6 +122,19 @@ describe('Fastify Server Integration Tests', () => {
             expect(response.status).to.equal(400);
             expect(response.body.fault.code).to.equal('badRequest');
             expect(response.body.fault.message).to.equal('You have supplied invalid request details');
+        });
+
+        it('should return 200 and data for valid ID when customer in database', async () => {
+            // Arrange
+            const customerId = 1;
+            customerDatabaseUtilStub.getCustomerAsync.returns(VALID_CUSTOMER);
+
+            // Act
+            const response = await request(fastifyServer.server).get(`/customers/${customerId}`);
+
+            // Assert
+            expect(response.status).to.equal(200);
+            expect(response.body).to.equal(VALID_CUSTOMER);
         });
     });
 });

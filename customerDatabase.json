@@ -1,13 +1,12 @@
 {
   "posts": [
     {
-      "id": 32,
+      "id": 1,
       "content": {
-        "additional": 1,
-        "firstName": "Adam",
-        "lastName": "Faulkner",
-        "employeeId": 32,
-        "address": "23 Albert Street"
+        "employeeId": 1,
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "23 fake street"
       }
     },
     {
