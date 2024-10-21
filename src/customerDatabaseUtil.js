@@ -1,3 +1,5 @@
+// customerDatabaseUtil.js
+
 import Database from './database.js';
 import { ClientError, ServerError } from './errors.js';
 

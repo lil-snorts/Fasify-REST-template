@@ -1,4 +1,4 @@
-
+// schemas.js
 export const postCustomerSchema = {
 
     body: {

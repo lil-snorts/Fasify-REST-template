@@ -1,3 +1,4 @@
+// database.js
 import { JSONFilePreset } from 'lowdb/node'
 import fileService from 'fs';
 import path from 'path';
@@ -23,8 +24,14 @@ class Database {
         }
     }
 
+    async deleteAll() {
+        this._database.data.posts = this._database.data.posts.filter((e) => e != e)
+        await this._database.write();
+    }
+
     async addNewEntityAsync(dataTransferObject, entityId) {
         if (this._database.data.posts.find((entity) => entity.id == entityId)) {
+            console.debug("Duplicate Id found")
             throw new ServerError("Database not configured to allow duplicate id's")
         }
 
@@ -33,7 +40,8 @@ class Database {
                 .posts
                 .push({ id: entityId, content: dataTransferObject })
             await this._database.write()
-        } catch {
+        } catch (error) {
+            console.debug(error)
             throw new ServerError("Failed to add new entity")
         }
 

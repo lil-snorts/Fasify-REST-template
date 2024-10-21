@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/application.js",
     "test": "mocha test/**/*.test.js",
     "test:watch": "mocha test/**/*.test.js --watch"
   },
