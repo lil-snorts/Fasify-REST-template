@@ -1,95 +1,103 @@
-Project Overview
-The Customer Management API provides two main endpoints:
+# Project Overview
+The Customer Management API provides two main endpoints for managing customer data. To run this project, you need to have Node.js version 22 or higher installed.
 
-/customers (POST) - Save customer details to the database.
-/customers/{id} (GET) - Retrieve customer details by ID.
-Prerequisites
-Node.js v14 or higher
-npm
-Installation
-Clone the repository:
-bash
-Copy code
-git clone https://github.com/your-username/customer-management-api.git
-Navigate to the project directory:
-bash
-Copy code
-cd customer-management-api
-Install dependencies:
-bash
-Copy code
+## Endpoints
+The API provides the following endpoints:
+
+* `/customers` (POST) - Save customer details to the database.
+* `/customers/{id}` (GET) - Retrieve customer details by ID.
+
+## Prerequisites
+* Node.js v22 or higher
+* npm
+
+## Installation
+To install the project, follow these steps:
+
+* Clone the repository:
+```bash
+git clone https://github.com/lil-snorts/node-integration-engineer-technical-exam.git
+```
+* Navigate to the project directory:
+```bash
+cd node-integration-engineer-technical-exam
+```
+* Install dependencies:
+```bash
 npm install
-Running the API
+```
+
+## Running the API
 To start the API server locally, run the following command:
-
-bash
-Copy code
+```bash
 npm start
-By default, the server will run on http://localhost:3000.
+```
+By default, the server will run on `http://localhost:3000`.
 
-API Documentation
+## API Documentation
 This API follows the OpenAPI 3.0.2 specification. The detailed API documentation can be accessed via Swagger UI once the server is running. You can visit the Swagger UI at:
-
-bash
-Copy code
+```bash
 http://localhost:3000/api-docs
-Usage
-1. Create a Customer
-Endpoint: POST /customers
+```
+
+## Usage
+### 1. Create a Customer
+Endpoint: `POST /customers`
 
 This endpoint is used to save customer details into the database.
 
-Request
-Method: POST
-URL: /customers
-Content-Type: application/json
-Body Parameters:
-json
-Copy code
+* Request:
+	+ Method: `POST`
+	+ URL: `/customers`
+	+ Content-Type: `application/json`
+	+ Body Parameters:
+```json
 {
-  "firstName": "Adam",
-  "lastName": "Faulkner",
+  "firstName": "Joe",
+  "lastName": "Bloggs",
   "employeeId": 32,
-  "address": "23 Albert Street"
+  "address": "23 Alberta Road"
 }
-Example cURL Command
-bash
-Copy code
+```
+* Example cURL Command:
+```bash
 curl -X POST http://localhost:3000/customers \
   -H "Content-Type: application/json" \
   -d '{
-        "firstName": "Adam",
-        "lastName": "Faulkner",
-        "employeeId": 32,
-        "address": "23 Albert Street"
+      "firstName": "Joe",
+      "lastName": "Bloggs",
+      "employeeId": 32,
+      "address": "23 Alberta Road"
       }'
-Responses:
-201 Created: Customer saved successfully.
-400 Bad Request: Missing or invalid parameters.
-500 Internal Server Error: Issue saving the customer.
-2. Get Customer Details
-Endpoint: GET /customers/{id}
+```
+* Responses:
+	+ 201 Created: Customer saved successfully.
+	+ 400 Bad Request: Missing or invalid parameters.
+	+ 500 Internal Server Error: Issue saving the customer.
+
+### 2. Get Customer Details
+Endpoint: `GET /customers/{id}`
 
 This endpoint retrieves a customer's details by their ID.
 
-Request
-Method: GET
-URL: /customers/{id}
-Path Parameter:
-id: Customer ID (integer)
-Example cURL Command
-bash
-Copy code
+* Request:
+	+ Method: `GET`
+	+ URL: `/customers/{id}`
+	+ Path Parameter:
+		- `id`: Customer ID (integer)
+* Example cURL Command:
+```bash
 curl -X GET http://localhost:3000/customers/1
-Responses:
-200 OK: Customer data retrieved successfully.
-json
-Copy code
+```
+* Responses:
+	+ 200 OK: Customer data retrieved successfully.
+```json
 {
-  "firstName": "Adam",
-  "lastName": "Faulkner",
+  "firstName": "Joe",
+  "lastName": "Bloggs",
   "employeeId": 32,
-  "address": "23 Albert Street"
+  "address": "23 Alberta Road"
 }
-400 Bad Request: Invalid or missing customer ID.
-500 Internal Server Error: Error retrieving customer data.
+```
+	+ 400 Bad Request: Invalid or missing customer ID.
+	+ 500 Internal Server Error: Error retrieving customer data.

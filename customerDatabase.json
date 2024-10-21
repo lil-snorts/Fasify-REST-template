@@ -1,0 +1,13 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "content": {
+        "employeeId": 1,
+        "firstName": "John",
+        "lastName": "Doe",
+        "address": "23 fake street"
+      }
+    }
+  ]
+}
