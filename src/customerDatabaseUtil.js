@@ -15,14 +15,13 @@ class CustomerDatabaseUtil {
 
 	async addNewCustomerAsync(customerDto) {
 		try {
-			console.debug(customerDto)
 			await this._database.addNewEntityAsync(customerDto, customerDto.employeeId)
 		} catch (error) {
 			if (error instanceof ServerError || error instanceof ClientError) {
 				throw error
 			}
 			// log and mask error
-			console.log(error)
+			console.error(error)
 			throw new ServerError("Internal server error")
 		}
 	}
@@ -40,7 +39,7 @@ class CustomerDatabaseUtil {
 				throw error
 			}
 			// log and mask error
-			console.log(error)
+			console.error(error)
 			throw new ServerError("Internal server error")
 		}
 	}

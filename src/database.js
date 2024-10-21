@@ -44,8 +44,8 @@ class Database {
             console.debug(error)
             throw new ServerError("Failed to add new entity")
         }
-
     }
+
     // Returns null if the customer is not found
     async getEntityDataAsync(searchForThisId) {
         return this._database.data

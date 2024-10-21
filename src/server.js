@@ -91,7 +91,6 @@ export const buildAndStartServer = async () => {
 	return server.getInstance();
 };
 
-// For unit testing, you can create an instance of FastifyServer without starting it
 export const createServerInstance = () => {
 	return new FastifyServer().getInstance();
 };
