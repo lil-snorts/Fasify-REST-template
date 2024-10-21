@@ -1,98 +1,114 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import Fastify from 'fastify';
-import { build } from '../../src/server.js'; // Assuming this is your entry point
-import customerDatabaseUtil from '../../src/customerDatabaseUtil.js';
-import { ClientError } from '../../src/errors.js';
+import request from 'supertest';
+import CustomerDatabaseUtil from '../../src/customerDatabaseUtil.js';
+import { ClientError, ServerError } from '../../src/errors.js';
+import { build } from '../../src/server.js'; // Adjust the path accordingly
 
-describe('Fastify Server - Validation and Error Handling', () => {
-    let fastify;
+describe('Fastify Server', () => {
+    let fastifyServer;
+    let customerDatabaseUtilStub;
 
-    beforeEach(() => {
-        // Create a new instance of Fastify for each test
-        fastify = Fastify({ logger: false });
-        // Setup routes and error handlers as in the original server setup
-        createRestRoutes();
-        setServerErrorHandler();
+    before(async () => {
+        // Create a Fastify instance
+        fastifyServer = build();
+
+        // Create a stub for the CustomerDatabaseUtil class
+        customerDatabaseUtilStub = sinon.createStubInstance(CustomerDatabaseUtil);
+        fastifyServer.customerDatabaseUtil = customerDatabaseUtilStub;
     });
 
-    afterEach(async () => {
-        await fastify.close(); // Ensure Fastify is closed after each test
-        sinon.restore(); // Restore all stubs
+    after(async () => {
+        await fastifyServer.close();
     });
 
-    describe('GET /customers/:id - Validation', () => {
-        it('should return 400 when id is not an integer', async () => {
-            const response = await fastify.inject({
-                method: 'GET',
-                url: '/customers/abc', // Invalid ID
-            });
+    describe('GET /customers/:id', () => {
+        it('should return customer data if it exists', async () => {
+            // Arrange
+            const customerId = '1';
+            const customerData = { employeeId: '1', name: 'John Doe' };
+            customerDatabaseUtilStub.getCustomerAsync.resolves(customerData);
 
-            expect(response.statusCode).to.equal(400);
-            expect(response.json().fault.code).to.equal('badRequest');
-            expect(response.json().fault.failures[0].field).to.equal('id');
+            // Act
+            const response = await request(fastifyServer.server).get(`/customers/${customerId}`);
+
+            // Assert
+            expect(response.status).to.equal(200);
+            expect(response.body).to.deep.equal(customerData);
+            expect(customerDatabaseUtilStub.getCustomerAsync.calledOnceWith(customerId)).to.be.true;
         });
 
-        it('should return 200 with valid id', async () => {
-            // Mock the databaseUtil to return a valid customer
-            const mockCustomer = { content: { id: 1, firstName: 'John', lastName: 'Doe' } };
-            sinon.stub(customerDatabaseUtil, 'getCustomerDataAsync').resolves(mockCustomer);
+        it('should return a ClientError if the customer does not exist', async () => {
+            // Arrange
+            const customerId = 'non-existing-id';
+            customerDatabaseUtilStub.getCustomerAsync.throws(new ClientError("No customer with that id"));
 
-            const response = await fastify.inject({
-                method: 'GET',
-                url: '/customers/1', // Valid ID
-            });
+            // Act
+            const response = await request(fastifyServer.server).get(`/customers/${customerId}`);
 
-            expect(response.statusCode).to.equal(200);
-            expect(response.json()).to.deep.equal(mockCustomer.content);
+            // Assert
+            expect(response.status).to.equal(400);
+            expect(response.body.fault.code).to.equal('badRequest');
+            expect(response.body.fault.message).to.equal('You have supplied invalid request details');
         });
 
-        it('should throw a ClientError when customer is not found', async () => {
-            sinon.stub(customerDatabaseUtil, 'getCustomerDataAsync').resolves(null); // Simulate no customer found
+        it('should return a ServerError for unknown errors', async () => {
+            // Arrange
+            const customerId = '1';
+            customerDatabaseUtilStub.getCustomerAsync.throws(new Error("Unexpected error"));
 
-            const response = await fastify.inject({
-                method: 'GET',
-                url: '/customers/1',
-            });
+            // Act
+            const response = await request(fastifyServer.server).get(`/customers/${customerId}`);
 
-            expect(response.statusCode).to.equal(400);
-            expect(response.json().fault.message).to.equal('You have supplied invalid request details');
+            // Assert
+            expect(response.status).to.equal(500);
+            expect(response.body.fault.code).to.equal('internalError');
+            expect(response.body.fault.message).to.equal('An internal error was encountered processing the request');
         });
     });
 
-    describe('POST /customers - Validation', () => {
-        it('should return 400 when required fields are missing', async () => {
-            const invalidCustomer = { firstName: 'Jane' }; // Missing lastName, address, employeeId
+    describe('POST /customers', () => {
+        it('should create a new customer successfully', async () => {
+            // Arrange
+            const customerDto = { employeeId: '1', name: 'John Doe' };
+            customerDatabaseUtilStub.addNewCustomerAsync.resolves();
 
-            const response = await fastify.inject({
-                method: 'POST',
-                url: '/customers',
-                payload: invalidCustomer, // Payload with missing fields
-            });
+            // Act
+            const response = await request(fastifyServer.server).post('/customers').send(customerDto);
 
-            expect(response.statusCode).to.equal(400);
-            expect(response.json().fault.code).to.equal('badRequest');
-            expect(response.json().fault.failures).to.have.lengthOf(3); // 3 required fields missing
+            // Assert
+            expect(response.status).to.equal(201);
+            expect(response.body.message).to.equal('Created successfully');
+            expect(customerDatabaseUtilStub.addNewCustomerAsync.calledOnceWith(customerDto)).to.be.true;
         });
 
-        it('should return 201 when customer is valid', async () => {
-            const validCustomer = {
-                firstName: 'Jane',
-                lastName: 'Doe',
-                address: '123 Main St',
-                employeeId: 1001
-            };
+        it('should return a ServerError if the database throws an error', async () => {
+            // Arrange
+            const customerDto = { employeeId: '2', name: 'Jane Doe' };
+            customerDatabaseUtilStub.addNewCustomerAsync.throws(new ServerError("Some server error"));
 
-            sinon.stub(customerDatabaseUtil, 'addNewCustomerAsync').resolves(); // Mock successful insert
+            // Act
+            const response = await request(fastifyServer.server).post('/customers').send(customerDto);
 
-            const response = await fastify.inject({
-                method: 'POST',
-                url: '/customers',
-                payload: validCustomer, // Valid customer payload
-            });
+            // Assert
+            expect(response.status).to.equal(500);
+            expect(response.body.fault.code).to.equal('internalError');
+            expect(response.body.fault.message).to.equal('An internal error was encountered processing the request');
+        });
 
-            expect(response.statusCode).to.equal(201);
-            expect(response.json().message).to.equal('Created successfully');
+        it('should return a ClientError for invalid requests', async () => {
+            // Arrange
+            const customerDto = { employeeId: '3', name: 'Invalid User' };
+            customerDatabaseUtilStub.addNewCustomerAsync.throws(new ClientError("Invalid data"));
+
+            // Act
+            const response = await request(fastifyServer.server).post('/customers').send(customerDto);
+
+            // Assert
+            expect(response.status).to.equal(400);
+            expect(response.body.fault.code).to.equal('badRequest');
+            expect(response.body.fault.message).to.equal('You have supplied invalid request details');
         });
     });
 });
