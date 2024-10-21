@@ -105,7 +105,7 @@ This endpoint retrieves a customer's details by their ID.
 * Example cURL Command:
 
 ```bash
-curl -X GET http://localhost:3000/customers/1
+curl -X GET http://localhost:3000/customers/32
 ```
 
 * Responses:
