@@ -1,5 +1,6 @@
 
 export const postCustomerSchema = {
+
     body: {
         type: 'object',
         required: ['firstName', 'lastName', 'address', 'employeeId'],
@@ -8,7 +9,8 @@ export const postCustomerSchema = {
             lastName: { type: 'string' },
             address: { type: 'string' },
             employeeId: { type: 'integer' }
-        }
+        },
+        additionalProperties: false
     }
 }
 

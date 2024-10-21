@@ -1,0 +1,23 @@
+{
+  "posts": [
+    {
+      "id": 32,
+      "content": {
+        "additional": 1,
+        "firstName": "Adam",
+        "lastName": "Faulkner",
+        "employeeId": 32,
+        "address": "23 Albert Street"
+      }
+    },
+    {
+      "id": 312,
+      "content": {
+        "firstName": "Adam",
+        "lastName": "Faulkner",
+        "employeeId": 312,
+        "address": "23 Albert Street"
+      }
+    }
+  ]
+}

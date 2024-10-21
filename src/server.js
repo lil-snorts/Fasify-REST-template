@@ -1,6 +1,5 @@
 import Fastify from 'fastify';
-
-import customerDatabaseUtil from './customerDatabaseUtil.js';
+import CustomerDatabaseUtil from './customerDatabaseUtil.js';
 import { postCustomerSchema, getCustomerIdSchema } from './schemas.js';
 import { ClientError } from './errors.js';
 
@@ -11,6 +10,7 @@ createRestRoutes();
 setServerErrorHandler();
 
 export const build = () => fastifyServer
+const customerDatabaseUtil = new CustomerDatabaseUtil()
 
 const startServer = async () => {
 	try {
@@ -87,11 +87,7 @@ function setServerErrorHandler() {
 function createRestRoutes() {
 	// GET customer by id
 	fastifyServer.get('/customers/:id', { schema: getCustomerIdSchema }, async (request, reply) => {
-		const customer = await customerDatabaseUtil.getCustomerDataAsync(request.params.id);
-		if (!customer) {
-			throw new ClientError("No customer with that id");
-		}
-		return customer.content;
+		return await customerDatabaseUtil.getCustomerAsync(request.params.id);
 	});
 
 	// POST new customer
