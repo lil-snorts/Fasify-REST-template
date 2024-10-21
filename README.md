@@ -35,10 +35,7 @@ npm start
 By default, the server will run on `http://localhost:3000`.
 
 ## API Documentation
-This API follows the OpenAPI 3.0.2 specification. The detailed API documentation can be accessed via Swagger UI once the server is running. You can visit the Swagger UI at:
-```bash
-http://localhost:3000/api-docs
-```
+This API follows the OpenAPI 3.0.2 specification. There is no public swagger.
 
 ## Usage
 ### 1. Create a Customer
