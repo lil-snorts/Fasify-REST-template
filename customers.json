@@ -1,0 +1,20 @@
+{
+  "customers": [
+    {
+      "id": 32,
+      "content": {
+        "fairstName": "Adam",
+        "lastName": "Faulkner",
+        "employeeId": 32,
+        "address": "23 Albert Street"
+      }
+    },
+    {
+      "content": {
+        "fairstName": "Adam",
+        "id": 32,
+        "address": "23 Albert Street"
+      }
+    }
+  ]
+}
